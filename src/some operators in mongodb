@@ -1,0 +1,736 @@
+/* 
+
+db.practice.find({
+    gender: "Female",
+    age: { $nin: [18, 27, 12, 77, 88, 30] },
+    interests: { $in: ["Gaming", "Reading", 'Travelling'] }
+}).project({
+    age: 1,
+    gender: 1,
+    interests: 1,
+})
+
+
+
+
+
+
+db.practice.find({
+    $and: [
+        { gender: "Female" },
+        { age: { $lt: 30 } },
+        {"skills.name": "JAVASCRIPT"}
+    ]
+}).project({
+    gender:1,
+    age: 1,
+    "skills.name": 1
+})
+
+
+
+
+
+db.practice.find({
+    $or: [
+        { gender: "Female" },
+        { age: { $lt: 30 } },
+        {"skills.name": "JAVASCRIPT"}
+    ]
+}).project({
+    gender:1,
+    age: 1,
+    "skills.name": 1
+}) 
+
+
+
+
+db.practice.find({
+    $or: [
+        { gender: "Female" },
+        { age: { $lt: 30 } },
+        {"skills.name": "JAVASCRIPT"}
+    ]
+}).project({
+    gender:1,
+    age: 1,
+    "skills.name": 1
+
+
+
+
+}) db.practice.find({
+    $or: [
+        { "skills.name": "PYTHON" },
+        { "skills.name": "JAVASCRIPT" }
+    ]
+}).project({
+    gender: 1,
+    age: 1,
+    "skills.name": 1
+})
+
+
+
+ 
+**** in case of same field, we can use $in operator, like: 
+----------------------------------------------------------------
+
+db.practice.find({
+    "skills.name":  {$in: ['PYTHON' , 'JAVASCRIPT']}
+})
+.project({"skills.name": 1}) 
+
+
+
+
+db.practice.find({ age: { $ne: 18 }, gender: "Female" })
+    .projection({ age: 1 })
+    .sort({ age: 1 }) */
+
+
+/* *** We can't use implicitm $and for the same field, like: 
+----------------------------------------------------------------
+
+db.practice.find({
+    age: { $ne: 18}, 
+    age: { $gt: 15}}) //this is wrong, because the field are same but we used implicitly and{,}. we can use this only for different field // We should use here explicitly $and
+  .projection({age:1})
+  .sort({age:1}) 
+
+
+
+db.practice.find({ 
+    location: { $exists: false }
+})
+
+
+
+db.practice.find({ 
+    skills: { $size: 1 } 
+})
+    .project({ skills: 1 })
+
+
+
+
+db.practice.find({ 
+    interests: "Travelling" 
+})
+    .project({interests: 1})
+
+
+
+
+// If we want to check check by position, we have to maintain the index no with the field
+// db.practice.find({ "interests.1": "Travelling" }).project({interests: 1})
+
+***If want to find any array with elements those will not change their position , we can fin this way: 
+---------------------------------------------------------------------------------------------------------------------
+
+db.practice.find({ 
+    interests: ["Cooking", "Travelling", "Reading"] })
+    .project({interests: 1})
+
+
+
+
+***But if we want to find any array with elements those will can be changed their position but all the elements will present, have use $all operator:
+-----------------------------------------------------------------------------------------------------------------------------
+
+db.practice.find({interests: {
+    $all : ["Reading", "Cooking", "Travelling"]
+}})
+   .projection({interests: 1}) 
+
+
+
+
+   
+***$all is equivalent to $and . But we can use $all for simillar fields because $all is easier than $and
+--------------------------------------------------------------------------------------------------------------
+
+db.practice.find({
+    $and: [
+        { "interests": "Reading" },
+        { "interests": "Travelling" },
+        { "interests": "Cooking" }
+    ]
+})
+    .projection({ interests: 1 }) 
+
+
+
+
+
+****$elemMatch operator
+-------------------------------------------------------------------------------------------------
+
+db.practice.find({
+    skills: { $elemMatch: { name: "JAVA", level: "Expert" } }
+})
+    .projection({ skills: 1 })
+
+
+
+ 
+
+***Update one: If we want to update 1 document, and that has only one value , in that case we can use $set. Its only work for primitive type data. It does not work for non-primitive type data. because it updates the whole field.
+----------------------------------------------------------------------------------------------------------------------------
+
+db.practice.updateOne({
+    _id: ObjectId("6406ad65fc13ae5a400000c7")
+}, {
+    $set: {
+        country: "Bangladesh"
+    }
+})
+
+
+
+
+*** $addToSet Operator
+-----------------------------------------------------------------------------------------
+if we want to  upadate only the value, the field in an array or that field which has multiple value but we just want to update one value, in that case we can use $addToSet: {}
+But  if we want to update the value oin an array, all also have to use $each
+-----------------------------------------------------------------------------------------------------------------------------
+
+db.practice.updateOne({
+    _id: ObjectId("6406ad65fc13ae5a400000c7")
+},{$addToSet: {
+    interests : {$each : ["Travelling"]}
+}}
+
+
+
+
+*** $pop Operator
+--------------------
+db.practice.find({_id : ObjectId("6406ad65fc13ae5a400000c7")})
+   .projection({})
+   .sort({_id:-1})
+   .limit(100)
+
+
+
+*** $pop Operator
+--------------------
+db.practice.find({_id : ObjectId("6406ad65fc13ae5a400000c7")})
+   .projection({})
+   .sort({_id:-1})
+   .limit(100)
+
+
+
+*** $pull Operator(for reoving a single element)
+----------------------------
+db.practice.updateOne({
+    _id: ObjectId("6406ad65fc13ae5a400000c7")
+}, {$pull: {friends: "Najmus Sakib" }}
+
+
+
+*** $pullAll Operator(for removing one more elements)
+
+db.practice.updateOne({
+    _id: ObjectId("6406ad65fc13ae5a400000c7")
+}, {$pullAll: {friends:[ "Rasel Ahmed", "Mizanur Rahman" ]}}
+
+
+
+***for update all document, we have to use updateMany
+
+db.practice.updateMany({}, {$pullAll: {friends:[ "Rasel Ahmed", "Mizanur Rahman" ]}}
+
+
+
+
+***deleteOne
+------------------------------
+
+db.practice.deleteOne({"_id" : ObjectId("6406ad65fc13ae5a400000c7")})
+
+
+
+db.createCollection("identity"
+)
+
+
+
+db.identity.insertOne({name: "Upoma"})
+
+
+
+db.identity.find({name:'Upoma'})
+   .projection({})
+   .sort({_id:-1})
+   .limit(100)
+
+
+***deleteCollection
+----------------------------------
+
+db.identity.drop()
+
+****increment any document
+-----------------------------------------------------------------------------------
+
+db.practice.updateOne({
+    _id : ObjectId("6406ad63fc13ae5a40000064")
+},{$inc: {
+    age: 1
+}})
+
+
+
+**updateMany:
+-------------------------
+db.practice.updateMany({},
+    {$rename: {
+    "favoutiteColor": "favouriteColor"
+}})
+
+***aggregrate:
+-----------------------------
+db.practice.aggregate([
+    // Match stage(find=match)
+    {
+        $match : {
+            gender : 'Male', age: {$gt :18}
+        }
+    }
+    ])
+    // .match({})
+    .project({gender: 1,age: 1})
+    // .sort({_id:-1})
+    // .limit(100)
+
+
+   db.practice.aggregate([
+    // add field stage    
+    { $addFields: { salary: {
+        $toInt: {$floor: {
+            $multiply: [{$rand: {}},100]
+        }}
+    } }}
+    ])
+    // .match({})
+    .project({ salary: 1 })
+    // .sort({_id:-1})
+    // .limit(100)
+
+
+
+
+    db.practice.aggregate([
+    // add field stage    
+    {
+        $addFields: {
+            salary: {
+                $toInt: {
+                    $floor: {
+                        $multiply: [{ $rand: {} }, 100]
+                    }
+                }
+            }
+        }
+    }
+]),
+
+    // .match({})
+   
+    { $out: "salaryWithPractice" }
+    // .sort({_id:-1})
+    // .limit(100)
+
+
+
+
+    *** for creating new collection
+    --------------------------------
+    db.practice.aggregate([
+    // add field stage    
+    {
+        $addFields: {
+            salary: {
+                $toInt: {
+                    $floor: {
+                        $multiply: [{ $rand: {} }, 100]
+                    }
+                }
+            }
+        }
+    }
+    { $out: "randomSalary" }
+])
+
+
+
+****For adding new field in the existing collection
+db.practice.aggregate([
+    // add field stage    
+    {
+        $addFields: {
+            salary: {
+                $toInt: {
+                    $floor: {
+                        $multiply: [{ $rand: {} }, 100]
+                    }
+                }
+            }
+        }
+    }
+    { $merge: "practice" }
+])
+
+
+
+
+db.practice.aggregate([
+    // group stage
+    {
+        $group : {
+            _id: "$age"
+        }
+    }
+])
+
+// reference -->
+// use case 1.operator $push $sum Case 2: reference to a filed
+
+
+
+
+db.practice.aggregate([
+    // group stage
+    {
+        $group: {
+            _id: "$salary",
+            persons: { $sum: 1 } //accumulator
+        }
+    },
+    {
+        $sort: {_id: 1
+        }
+    }
+])
+
+or,
+----------------------------
+
+
+db.practice.aggregate([
+    // group stage
+    {
+        $group: {
+            _id: "$salary",
+            persons: { $sum: 1 } //accumulator
+        }
+    },
+    {
+        // project stage
+        $project : {
+            _id: 0,
+            salary: "$_id"
+            persons : 1
+        }
+    },
+    {
+        $sort: {_id: 1
+        }
+    }
+])
+
+// reference -->
+// use case 1.operator $push $sum Case 2: reference to a filed
+
+
+
+
+****accumulator
+----------------------------
+
+db.practice.aggregate([
+    // group stage
+    {
+        $group: {
+            _id: "$salary",
+            person: { $sum: 1 } //accumulator
+        }
+    }
+])
+
+
+
+db.practice.aggregate([
+    // group stage
+    {
+        $group: {
+            _id: "$salary",
+            persons: { $sum: 1 } //accumulator
+        }
+    },
+    {
+        // project stage
+        $project: {
+            _id: 0,
+            salary: "$_id"
+            persons: 1
+        }
+    },
+    {
+        $sort: {
+            _id: 1
+        }
+    },
+    {
+        // limit stage
+        $limit: 2
+    }
+])
+
+
+
+
+db.practice.aggregate([
+    {
+        //match stage
+        $match: {
+            age: {
+                $gt: 18
+            }
+        }
+        },
+    // group stage
+    {
+        $group: {
+            _id: "$salary",
+            persons: { $sum: 1 } //accumulator
+        }
+    },
+    {
+        // project stage
+        $project: {
+            _id: 0,
+            salary: "$_id"
+            persons: 1
+        }
+    },
+    {
+        $sort: {
+            _id: 1
+        }
+    },
+    {
+        // limit stage
+        $limit: 2
+    }
+])
+
+
+***we can use same stage for different field more time
+--------------------------------------------------------
+
+db.practice.aggregate([
+    {
+        //match stage
+        $match: {
+            age: {
+                $gt: 18
+            }
+        }
+    },
+        //match stage
+    {$match: { gender: "Female"
+        }
+    },
+    // group stage
+    {
+        $group: {
+            _id: "$salary",
+            persons: { $sum: 1 } //accumulator
+        }
+    },
+    {
+        // project stage
+        $project: {
+            _id: 0,
+            salary: "$_id"
+            persons: 1
+        }
+    },
+    {
+        $sort: {
+            _id: 1
+        }
+    }
+])
+
+// use case 1.operator $push $sum Case 2: reference to a filed
+
+***to count all the members salary
+------------------------------------
+
+db.practice.aggregate([
+  
+    // group stage
+    {
+        $group: {
+            _id: null,
+            count: { $sum: "$salary" } //accumulator
+        }
+   
+])
+
+***to check minimum, maximum, avarage, salary range etc salary
+------------------------------------
+
+db.practice.aggregate([
+
+    // group stage
+    {
+        $group: {
+            _id: null,
+            count: { $sum: "$salary" },
+            maxSalary: { $max: "$salary" },//accumulator
+            minSalary: { $min: "$salary" },//accumulator
+            avgSalary: { $avg: "$salary" },//accumulator
+        }
+    },
+    {
+        $project: {
+            count: 1,
+            maxSalary: 1,
+            minSalary: 1,
+            avgSalary: 1,
+            salaryRange: { $subtract: ["$maxSalary", "$minSalary"]  }
+        }
+    }
+
+])
+
+
+
+
+****unwind operator
+---------------------------------------
+
+db.practice.aggregate([
+
+    // unwind stage
+    {
+        $unwind: "$education"
+    },
+    {
+        $group: {
+            _id: "$education",
+            count: {$sum: 1}
+        }
+    }
+
+])
+
+
+
+db.practice.aggregate([
+
+    // unwind stage
+    {
+        $unwind: "$education"
+    },
+    {
+        $group: {
+            _id: "null",
+            count: {$sum: 1}
+        }
+    }
+
+])
+
+
+***$facet------ multi-stage pipeline
+-----------------------------------------
+
+db.practice.aggregate([
+    { $match: { _id: ObjectId("6406ad63fc13ae5a40000064") } },
+
+    // facet 
+    {
+        $facet: {
+            //sub pipeline
+            "friendsCount": [
+                // stage                
+                {
+                    $project: {
+                        friendsCount: {
+                            $size: "$friends"
+                        }
+                    }
+                }
+            ],
+            //sub pipeline
+            "interestsCount": [
+                {
+                    $project: {
+                        interestsCount: {
+                            $size: "$interests"
+                        }
+                    }
+                }
+            ],
+            //sub pipeline
+            "skillsCount": [
+                {
+                    $project: {
+                        skillsCount: {
+                            $size: "$skills"
+                        }
+                    }
+                }
+            ]
+
+        }
+
+])
+
+
+
+***looup operator
+--------------------------------
+
+db.practice.aggregate([
+    {
+        $match: {
+            email: "mdangl1@odnoklassniki.ru"
+        }
+    },
+    // lookup stage
+    {
+        $lookup: {
+            from: "additionalInfo",
+            localField: "email",
+            foreignField: "userEmail",
+            as: "additionalInfo"
+        }
+    }
+])
+
+
+db.practice.aggregate([
+    {
+        $match: {
+            _id: ObjectId("6406ad63fc13ae5a40000065")
+        }
+    },
+    // lookup stage
+    {
+        $lookup: {
+            from: "additionalInfo",
+            localField: "_id",
+            foreignField: "userId",
+            as: "additionalInformation"
+        }
+    }
+])
+*/
